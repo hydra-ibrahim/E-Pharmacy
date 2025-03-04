@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="bootstrap-5.3.3-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+    <script src="bootstrap-5.3.3-dist/js/bootstrap.min.js"></script>
+    <title>Sign In</title>
+    <style>
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <section style="background-color: #eee;">
+        <div class="container min-vh-100">
+            <div class="row d-flex justify-content-center align-items-center min-vh-100">
+                <div class="col-lg-12 col-xl-11">
+                    <div class="card text-black" style="border-radius: 25px;">
+                        <div class="card-body p-md-5">
+                            <div class="row justify-content-center">
+                                <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+
+                                    <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Sign in</p>
+
+                                    <form class="mx-1 mx-md-4">
+
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fa fa-user fa-lg me-3 fa-fw"></i>
+                                            <div data-mdb-input-init class="form-outline flex-fill mb-0"><span
+                                                    id="username-error" class="error-message"></span>
+                                                <input type="text" id="form3Example1c" class="form-control" />
+                                                <label class="form-label" for="form3Example1c">Username</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fa fa-lock fa-lg me-3 fa-fw"></i>
+                                            <div data-mdb-input-init class="form-outline flex-fill mb-0"><span
+                                                    id="password-error" class="error-message"></span>
+                                                <input type="password" id="form3Example2c" class="form-control" />
+                                                <label class="form-label" for="form3Example2c">Password</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+                                            <button type="button" data-mdb-button-init data-mdb-ripple-init
+                                                class="btn btn-primary btn-lg" onclick="login()">Log in</button>
+                                        </div>
+
+                                    </form>
+
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div
+                                                class="d-flex gap-2 gap-md-4 flex-column flex-md-row justify-content-md-center mt-4">
+                                                <p class="m-0 text-secondary text-center">If you forgot your password,
+                                                    then <a href="password reset.html"
+                                                        class="link-primary text-decoration-none">reset it!</a></p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div
+                                                class="d-flex gap-2 gap-md-4 flex-column flex-md-row justify-content-md-center mt-4">
+                                                <p class="m-0 text-secondary text-center">Don't have an account?! Hurry
+                                                    up and <a href="sign up.html"
+                                                        class="link-primary text-decoration-none">create one!</a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2">
+
+                                    <img src="img/draw1.webp" class="img-fluid" alt="Sample image">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        function login() {
+
+            if (!validateForm()) return
+
+            errors = document.getElementsByClassName('error-message')
+
+            fetch('http://127.0.0.1:8000/api/auth/login/',
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        username: document.getElementById('form3Example1c').value,
+                        password: document.getElementById('form3Example2c').value
+                    }),
+                    headers: {
+                        "Content-type": "application/json",
+                    },
+                    mode: "cors",
+                }
+            )
+                .then(response => {
+                    if (!response.ok) {
+                        response.text().then(text => {
+                            for (err of errors) err.innerText = ''
+
+                            val_res = JSON.parse(text)
+                            for (const [key, value] of Object.entries(val_res)) {
+                                if (key == 'non_field_errors') alert(value)
+                                else document.getElementById(`${key}-error`).innerText = value
+                            }
+                        })
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    for (err of errors) err.innerText = ''
+                    sessionStorage.setItem('token', data['key'])
+                    if (data['user']['is_staff'] == true) open('pharmacy registration.html', '_top')
+                    else open('nearest pharmacies.html', '_top')
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function validateForm() {
+            const password = document.getElementById("form3Example2c").value;
+            const username = document.getElementById("form3Example1c").value;
+
+            const passwordError = document.getElementById(
+                "password-error"
+            );
+            const usernameError = document.getElementById(
+                "username-error"
+            );
+
+            passwordError.textContent = "";
+            usernameError.textContent = "";
+
+            let isValid = true;
+
+            if (password === "" || !/^(?=.*[^\d]).{8,}$/g.test(password)) {
+                passwordError.textContent =
+                    "Please enter a password with at least 8 characters and not all of them are digits.";
+                isValid = false;
+            }
+
+            if (username === "") {
+                usernameError.textContent =
+                    "Please enter the your username.";
+                isValid = false;
+            }
+
+            return isValid;
+        }
+    </script>
+</body>
+
+</html>

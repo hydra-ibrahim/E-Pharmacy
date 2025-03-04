@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{%static 'AuthAPIs/bootstrap-5.3.3-dist/css/bootstrap.min.css'%}"
+    />
+    <script src="{%static 'AuthAPIs/bootstrap-5.3.3-dist/js/bootstrap.min.js'%}"></script>
+    <title>Email Confirmation</title>
+  </head>
+
+  <body>
+    <section style="background-color: #eee">
+      <div class="container min-vh-100">
+        <div
+          class="row d-flex justify-content-center align-items-center min-vh-100"
+        >
+          <div class="col-lg-12 col-xl-11">
+            <div class="card text-black" style="border-radius: 25px">
+              <div class="card-body p-md-5">
+                <div
+                  class="row justify-content-center d-flex align-items-center"
+                >
+                  <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+                    <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">
+                      Email Verification
+                    </p>
+
+                    <div class="row">
+                      <div class="col-12">
+                        <div
+                          class="d-flex gap-2 gap-md-4 flex-column flex-md-row justify-content-md-center mt-4"
+                        >
+                          {%if response.status_code == 200%}
+                          <p class="m-0 text-secondary text-center">
+                            Your email has been verified successfully!<br />You
+                            may now close this page.
+                          </p>
+                          {%else%}
+                          <p class="m-0 text-secondary text-center">
+                            If you were attempting to verify your email, the
+                            verification key would be incorrect, and your email
+                            would not be verified.
+                          </p>
+                          {%endif%}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2"
+                  >
+                    {%if response.status_code == 200%}
+                    <img
+                      src="{%static 'AuthAPIs/images/verified.svg'%}"
+                      class="img-fluid"
+                      alt="Sample image"
+                    />
+                    {%else%}
+                    <img
+                      src="{%static 'AuthAPIs/images/page_not_found.svg'%}"
+                      class="img-fluid"
+                      alt="Sample image"
+                    />
+                    {%endif%}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

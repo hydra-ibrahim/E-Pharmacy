@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        table {
+            text-align: center;
+            width: 100%;
+        }
+
+        #map {
+            /* max-width: 80%; */
+            min-height: 70vh;
+            margin: 15px auto 10px;
+            border: 5px solid burlywood;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <link rel="stylesheet" href="bootstrap-5.3.3-dist/css/bootstrap.min.css">
+    <!-- <script src="bootstrap-5.3.3-dist/js/bootstrap.min.js"></script> -->
+    <script src="bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <section style="background-color: #eee;">
+        <div class="container min-vh-100">
+            <div class="row d-flex justify-content-center align-items-center min-vh-100">
+                <div class="card text-black" style="border-radius: 25px;">
+                    <div class="card-body p-md-5">
+                        <div class="row justify-content-center">
+
+                            <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Register a Pharmacy</p>
+                            <hr>
+                            <form class="mx-1 mx-md-4">
+
+                                <div class="d-flex flex-row align-items-center mb-4"><i
+                                        class="fa fa-h-square fa-lg me-3 fa-fw"></i>
+                                    <legend>Pharmacy</legend>
+                                </div>
+
+                                <div class="d-flex flex-row align-items-center mb-4">
+                                    <div data-mdb-input-init class="form-outline mx-auto mb-0">
+                                        <span id="name-error" class="error-message"></span>
+                                        <input type="text" id="pharmacy-name" class="form-control" />
+                                        <label class="form-label" for="pharmacy-name">Name</label>
+                                    </div>
+                                    <div data-mdb-input-init class="form-outline mx-auto mb-0">
+                                        <span id="email-error" class="error-message"></span>
+                                        <input type="email" id="pharmacy-email" class="form-control" />
+                                        <label class="form-label" for="pharmacy-email">Email</label>
+                                    </div>
+                                    <div data-mdb-input-init class="form-outline mx-auto mb-0">
+                                        <span id="phone_number-error" class="error-message"></span>
+                                        <input type="tel" id="pharmacy-phone" class="form-control" />
+                                        <label class="form-label" for="pharmacy-phone">Phone</label>
+                                    </div>
+
+                                </div>
+                                <div class="d-flex flex-row align-items-center mb-4">
+                                    <div data-mdb-input-init class="form-outline flex-fill mb-0">
+                                        <span id="location-error" class="error-message"></span>
+                                        <div id="map"></div>
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <div class="mx-auto">
+                                                <input type="number" id="pharmacy-longitude" class="form-control"
+                                                    step="0.0000000001" disabled />
+                                                <label class=" form-label" for="pharmacy-longitude">Longitude</label>
+                                            </div>
+                                            <div class="mx-auto">
+                                                <input type="number" id="pharmacy-latitude" class="form-control"
+                                                    step="0.0000000001" disabled />
+                                                <label class="form-label" for="pharmacy-latitude">Latitude</label>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <hr>
+                                <fieldset class="mt-5">
+                                    <div class="d-flex flex-row align-items-center mb-4">
+                                        <i class="fa fa-user-md fa-lg me-3 fa-fw"></i>
+                                        <legend>Pharmacist</legend>
+                                    </div>
+
+                                    <div class="d-flex flex-row align-items-center mb-4">
+                                        <div data-mdb-input-init class="form-outline mx-auto mb-0">
+                                            <span id="username-error" class="error-message"></span>
+                                            <input type="text" id="pharmacist-username" class="form-control" />
+                                            <label class="form-label" for="pharmacist-username">Username</label>
+                                        </div>
+                                        <div data-mdb-input-init class="form-outline mx-auto mb-0">
+                                            <span id="first_name-error" class="error-message"></span>
+                                            <input type="text" id="pharmacist-first-name" class="form-control" />
+                                            <label class="form-label" for="pharmacist-first-name">First Name</label>
+                                        </div>
+                                        <div data-mdb-input-init class="form-outline mx-auto mb-0">
+                                            <span id="last_name-error" class="error-message"></span>
+                                            <input type="text" id="pharmacist-last-name" class="form-control" />
+                                            <label class="form-label" for="pharmacist-last-name">Last Name</label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <hr>
+
+                                <fieldset class="mt-4">
+                                    <div class="d-flex flex-row align-items-center mb-4">
+                                        <i class="fa fa-cog fa-lg me-3 fa-fw"></i>
+                                        <legend>Business Hours</legend>
+                                    </div>
+                                    <div class="mr-lg">
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <div class="form-check form-switch mx-auto">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                    id="open24_7">
+                                                <label class="form-check-label" for="open24_7">Open 24/7</label>
+                                            </div>
+                                        </div>
+                                        <div id="business_hours">
+                                            <div class="d-flex flex-row align-items-center mb-4">
+                                                <div class="form-check form-switch mx-auto">
+                                                    <input class="form-check-input" type="checkbox" role="switch"
+                                                        id="consistent">
+                                                    <label class="form-check-label" for="consistent">Customizable
+                                                        Schedule</label>
+                                                </div>
+                                            </div>
+                                            <table style="display: table;" class="table-primary mb-4"
+                                                id="business_hours2">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Days</th>
+                                                        <th scope="col">Exceptions</th>
+                                                        <th scope="col">Opens
+                                                        </th>
+
+                                                        <th scope="col">Closes
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tr>
+                                                    <td colspan="3">
+                                                        <div style="height: 12px;"></div>
+                                                    </td>
+                                                </tr>
+                                                <tbody>
+                                                    <tr class="table-primary">
+                                                        <td>all</td>
+                                                        <td>
+                                                            <div class="btn-group">
+                                                                <button type="button"
+                                                                    class="btn btn-danger dropdown-toggle"
+                                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                                    Except
+                                                                </button>
+                                                                <ul class="dropdown-menu">
+                                                                    <li><a class="dropdown-item" href="#">
+                                                                            <div>
+                                                                                <input class="excs" type="checkbox"
+                                                                                    id="Sun" name="Sun" value="Sun" />
+                                                                                <label for="Sun">Sun</label>
+                                                                            </div>
+                                                                        </a></li>
+                                                                    <li><a class="dropdown-item" href="#">
+                                                                            <div>
+                                                                                <input class="excs" type="checkbox"
+                                                                                    id="Mon" name="Mon" value="Mon" />
+                                                                                <label for="Mon">Mon</label>
+                                                                            </div>
+                                                                        </a></li>
+                                                                    <li><a class="dropdown-item" href="#">
+                                                                            <div>
+                                                                                <input class="excs" type="checkbox"
+                                                                                    id="Tue" name="Tue" value="Tue" />
+                                                                                <label for="Tue">Tue</label>
+                                                                            </div>
+                                                                        </a></li>
+                                                                    <li><a class="dropdown-item" href="#">
+                                                                            <div>
+                                                                                <input class="excs" type="checkbox"
+                                                                                    id="Wed" name="Wed" value="Wed" />
+                                                                                <label for="Wed">Wed</label>
+                                                                            </div>
+                                                                        </a></li>
+                                                                    <li><a class="dropdown-item" href="#">
+                                                                            <div>
+                                                                                <input class="excs" type="checkbox"
+                                                                                    id="Thr" name="Thr" value="Thr" />
+                                                                                <label for="Thr">Thr</label>
+                                                                            </div>
+                                                                        </a></li>
+                                                                    <li><a class="dropdown-item" href="#">
+                                                                            <div>
+                                                                                <input class="excs" type="checkbox"
+                                                                                    id="Fri" name="Fri" value="Fri" />
+                                                                                <label for="Fri">Fri</label>
+                                                                            </div>
+                                                                        </a></li>
+                                                                    <li><a class="dropdown-item" href="#">
+                                                                            <div>
+                                                                                <input class="excs" type="checkbox"
+                                                                                    id="Sat" name="Sat" value="Sat" />
+                                                                                <label for="Sat">Sat</label>
+                                                                            </div>
+                                                                        </a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <input class="form-control text-center" type="time"
+                                                                id="opens" />
+                                                        </td>
+                                                        <td>
+                                                            <input class="form-control text-center" type="time"
+                                                                id="closes" />
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                            <table style="display: none;" class="table-primary mb-4"
+                                                id="business_hours1">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Days</th>
+                                                        <th scope="col">Opens
+                                                        </th>
+
+                                                        <th scope="col">Closes
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tr>
+                                                    <td colspan="3">
+                                                        <div style="height: 12px;"></div>
+                                                    </td>
+                                                </tr>
+                                                <tbody>
+                                                    <tr class="table-primary">
+                                                        <td name="Sat" class="days">Sat</td>
+                                                        <td>
+                                                            <input class="form-control text-center opens" type="time"
+                                                                id="sasm" />
+                                                        </td>
+                                                        <td>
+                                                            <input class="form-control text-center closes" type="time"
+                                                                id="saem" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="table-secondary">
+                                                        <td name="Sun" class="days">Sun</td>
+                                                        <td>
+                                                            <input class="form-control text-center opens" type="time"
+                                                                id="susm" />
+                                                        </td>
+                                                        <td>
+                                                            <input class="form-control text-center closes" type="time"
+                                                                id="suem" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="table-success">
+                                                        <td name="Mon" class="days">Mon</td>
+                                                        <td>
+                                                            <input class="form-control text-center opens" type="time"
+                                                                id="msm" />
+                                                        </td>
+                                                        <td>
+                                                            <input class="form-control text-center closes" type="time"
+                                                                id="mem" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="table-danger">
+                                                        <td name="Tue" class="days">Tue</td>
+                                                        <td>
+                                                            <input class="form-control text-center opens" type="time"
+                                                                id="tusm" />
+                                                        </td>
+                                                        <td>
+                                                            <input class="form-control text-center closes" type="time"
+                                                                id="tuem" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="table-warning">
+                                                        <td name="Wed" class="days">Wed</td>
+                                                        <td>
+                                                            <input class="form-control text-center opens" type="time"
+                                                                id="wsm" />
+                                                        </td>
+                                                        <td>
+                                                            <input class="form-control text-center closes" type="time"
+                                                                id="wem" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="table-info">
+                                                        <td name="Thr" class="days">Thr</td>
+                                                        <td>
+                                                            <input class="form-control text-center opens" type="time"
+                                                                id="thsm" />
+                                                        </td>
+                                                        <td>
+                                                            <input class="form-control text-center closes" type="time"
+                                                                id="them" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="table-light">
+                                                        <td name="Fri" class="days">Fri</td>
+                                                        <td>
+                                                            <input class="form-control text-center opens" type="time"
+                                                                id="fsm" />
+                                                        </td>
+                                                        <td>
+                                                            <input class="form-control text-center closes" type="time"
+                                                                id="fem" />
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <hr>
+                                <div class="d-flex justify-content-center mt-5 mx-4 mb-3 mb-lg-4">
+                                    <button type="button" data-mdb-button-init data-mdb-ripple-init
+                                        class="btn btn-primary btn-lg" onclick="register()">Register
+                                        <i id="spinner" style="display: none;" class="fa fa-spinner"
+                                            aria-hidden="true"></i></button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="js/pharmacy registration.js"></script>
+    <script>
+
+        let open24_7 = document.getElementById('open24_7')
+        let business_hours = document.getElementById('business_hours')
+
+        open24_7.onchange = function () {
+            business_hours.style.display = this.checked ? 'none' : 'block'
+        }
+
+        let consistent = document.getElementById('consistent')
+        let business_hours2 = document.getElementById('business_hours2')
+        let business_hours1 = document.getElementById('business_hours1')
+
+        consistent.onchange = function () {
+            business_hours1.style.display = this.checked ? 'table' : 'none';
+            business_hours2.style.display = this.checked ? 'none' : 'table'
+        }
+
+        function register() {
+
+            if (!validateForm()) return
+
+            let data = {}
+            data.name = document.getElementById('pharmacy-name').value
+            data.pharmacist = {
+                username: document.getElementById('pharmacist-username').value,
+                first_name: document.getElementById('pharmacist-first-name').value,
+                last_name: document.getElementById('pharmacist-last-name').value
+            }
+            data.phone_number = document.getElementById('pharmacy-phone').value
+            data.email = document.getElementById('pharmacy-email').value
+            data.location = {
+                type: 'Point',
+                coordinates:
+                    [parseFloat(document.getElementById('pharmacy-longitude').value),
+                    parseFloat(document.getElementById('pharmacy-latitude').value)]
+            }
+
+            if (document.getElementById('open24_7').checked) {
+                let days = document.getElementsByClassName('days')
+                data.business_hours = []
+                for (let i = 0; i < 7; i++) {
+                    data.business_hours.push({
+                        day_of_the_week: days[i].getAttribute('name'), opened_at: '', closed_at: ''
+                    })
+                }
+            }
+
+            else if (!document.getElementById('consistent').checked) {
+                let opens = document.getElementById('opens').value.split(':')
+                let closes = document.getElementById('closes').value.split(':')
+
+                if (opens == '' || closes == '') {
+                    alert('Opening and/or closing time is missing!')
+                    return
+                }
+
+                if (Number(opens[0]) < Number(closes[0])) {
+
+                    let excs = document.getElementsByClassName('excs')
+
+                    data.business_hours = []
+
+                    for (let i = 0; i < 7; i++) {
+                        if (!excs[i].checked) data.business_hours.push({
+                            day_of_the_week: excs[i].value, opened_at: `${opens[0]}:${opens[1]}`, closed_at: `${closes[0]}:${closes[1]}`
+                        })
+                    }
+
+                } else if (Number(opens[0]) == Number(closes[0]) && Number(opens[1]) == Number(closes[1])) {
+
+                    for (let i = 0; i < 7; i++) {
+
+                        if (!excs[i].checked) data.business_hours.push({
+                            day_of_the_week: days[i], opened_at: '', closed_at: ''
+                        })
+
+                    }
+
+                } else {
+
+                    alert('Opening time must be before closing time!')
+                    return
+
+                }
+            }
+
+            else {
+                data.business_hours = []
+
+                let days = document.getElementsByClassName('days')
+                let opens = document.getElementsByClassName('opens')
+                let closes = document.getElementsByClassName('closes')
+                let offDays = ``
+
+                for (let i = 0; i < 7; i++) {
+
+                    let opens_i = opens[i].value.split(':')
+                    let closes_i = closes[i].value.split(':')
+
+                    if (opens[i].value == '' || closes[i].value == '') {
+
+                        offDays = offDays.concat(`On ${days[i].getAttribute('name')}, Opening and/or closing time is missing!`, i == 6 ? '' : '\n')
+
+                    } else if (Number(opens_i[0]) < Number(closes_i[0])) {
+
+                        data.business_hours.push({
+                            day_of_the_week: days[i].getAttribute('name'), opened_at: `${opens_i[0]}:${opens_i[1]}`, closed_at: `${closes_i[0]}:${closes_i[1]}`
+                        })
+
+                    } else if (Number(opens_i[0]) == Number(closes_i[0]) && Number(opens_i[1]) == Number(closes_i[1])) {
+
+                        data.business_hours.push({
+                            day_of_the_week: days[i].getAttribute('name'), opened_at: '', closed_at: ''
+                        })
+
+                    } else {
+
+                        alert(`On ${days[i].getAttribute('name')}, Opening time must be before closing time!`)
+                        return
+
+                    }
+
+                }
+
+                if (offDays !== `` && !confirm(offDays)) return
+
+            }
+
+            document.getElementById('spinner').display = 'inline'
+
+            errors = document.getElementsByClassName('error-message')
+
+            fetch('http://127.0.0.1:8000/api/pharmacies/',
+                {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: {
+                        "Content-type": "application/json",
+                        'Authorization': 'Token ' + sessionStorage.getItem('token')
+                    },
+                    mode: "cors",
+                }
+            )
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status == 401) open('sign in.html', '_top')
+                        response.text().then(text => {
+                            for (err of errors) err.innerText = ''
+
+                            val_res = JSON.parse(text)
+                            for (const [key, value] of Object.entries(val_res)) {
+                                if (key == 'non_field_errors') alert(value)
+                                else if (key == 'pharmacist') {
+                                    for (const [k, v] of Object.entries(value)) {
+                                        if (k == 'non_field_errors') alert(v)
+                                        else document.getElementById(`${k}-error`).innerText = v
+                                    }
+                                }
+                                else if (key == 'business_hours') {
+                                    for (const [k, v] of Object.entries(value)) {
+                                        if (k == 'non_field_errors') alert(v)
+                                        else document.getElementById(`${k}-error`).innerText = v
+                                    }
+                                }
+                                else if (key == 'location') document.getElementById(`${key}-error`).innerText = 'Click on your location on the map'
+                                else document.getElementById(`${key}-error`).innerText = value
+                            }
+                        })
+                        throw new Error('Network response was not ok');
+                    }
+                    for (err of errors) err.innerText = ''
+                    alert('Pharmacy has been registered successfully!')
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function validateForm() {
+            const name = document.getElementById("pharmacy-name").value;
+            const phone = document.getElementById("pharmacy-phone").value;
+            const email = document.getElementById("pharmacy-email").value;
+            const lon = document.getElementById("pharmacy-longitude").value;
+            const lat = document.getElementById("pharmacy-latitude").value;
+            const username = document.getElementById("pharmacist-username").value;
+            const fname = document.getElementById("pharmacist-first-name").value;
+            const lname = document.getElementById("pharmacist-last-name").value;
+
+            const nameError = document.getElementById(
+                "name-error"
+            );
+            const emailError = document.getElementById(
+                "email-error"
+            );
+            const phoneError = document.getElementById(
+                "phone_number-error"
+            );
+            const locationError = document.getElementById(
+                "location-error"
+            );
+            const usernameError = document.getElementById(
+                "username-error"
+            );
+            const fnameError = document.getElementById(
+                "first_name-error"
+            );
+            const lnameError = document.getElementById(
+                "last_name-error"
+            );
+
+            nameError.textContent = "";
+            emailError.textContent = "";
+            phoneError.textContent = "";
+            locationError.textContent = "";
+            usernameError.textContent = "";
+            fnameError.textContent = "";
+            lnameError.textContent = "";
+
+            let isValid = true;
+
+            if (name === "" || /\d/.test(name)) {
+                nameError.textContent =
+                    "Please enter the pharmacy's name properly.";
+                isValid = false;
+            }
+
+            if (phone === "" || !/^09\d{8}$/g.test(phone)) {
+                phoneError.textContent =
+                    "Please enter a valid phone number.";
+                isValid = false;
+            }
+
+            if (email === "" || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(email)) {
+                emailError.textContent =
+                    "Please enter a valid email address.";
+                isValid = false;
+            }
+
+            if (lon === "" || lat === "") {
+                locationError.textContent = "Please select your location on the map."
+                isValid = false
+            }
+
+            if (username === "") {
+                usernameError.textContent =
+                    "Please enter the pharmacist username.";
+                isValid = false;
+            }
+
+            if (fname === "" || /\d/.test(name)) {
+                lnameError.textContent =
+                    "Please enter the pharmacist last name.";
+                isValid = false;
+            }
+
+            if (lname === "" || /\d/.test(name)) {
+                fnameError.textContent =
+                    "Please enter the pharmacist first name.";
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+    </script>
+</body>
+
+</html>
